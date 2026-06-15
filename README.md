@@ -1,0 +1,134 @@
+# Cochlear Implant Outcome Prediction
+
+**Master's Thesis** — Nguyen Thien Truc Do (2469632)  
+**University:** UHasselt  
+**Collaboration:** Otoconsult NV / Dr Paul Govaerts  
+**Internal supervisor:** Prof. Inigo Bermejo
+
+---
+
+## Overview
+
+Data-driven prediction of post-operative hearing outcomes in cochlear
+implant (CI) recipients using preoperative clinical variables.
+
+Three models are trained and evaluated:
+
+| Model | Outcome | Group |
+|-------|---------|-------|
+| Model 1 | Post-operative audiometry thresholds (7 freq × 3 timepoints) | All (n=795) |
+| Model 2 | Post-operative EaSI speech index (3 timepoints) | Assessable (n=500) |
+| Model 3 | Phoneme discrimination failure (binary, eligible pairs only) | Assessable (n=500) |
+
+Each model is evaluated across three feature configurations (Approaches 1–3)
+and two validation strategies (5-fold CV + chronological split at 2020).
+
+---
+
+## Repository Structure
+
+```
+ci-outcome-prediction/
+├── src/
+│   ├── features.py          # Feature definitions, EaSI formula, FREQ_PREDS
+│   ├── preprocessing.py     # Load CSV, exclusions, stratification, imputation
+│   ├── utils.py             # Model builders, CV runners, metric helpers
+│   ├── model1_audiometry.py # Model 1: audiometry regression
+│   ├── model2_easi.py       # Model 2: EaSI regression
+│   └── model3_phoneme.py    # Model 3: phoneme classification
+├── notebooks/
+│   ├── 01_eda.py            # EDA figures (run with jupytext)
+│   
+├── outputs/                 # Generated figures (PDFs)
+├── config.example.py        # Template for local config
+├── requirements.txt
+└── .gitignore
+```
+
+---
+
+## Data
+
+Data were extracted from the **Audiqueen** clinical information system
+(Otoconsult NV) via a modular SQL Server pipeline (see `sql/` directory).
+
+**Raw data is confidential and not included in this repository.**  
+Contact Otoconsult NV for data access.
+
+The SQL pipeline exports a single flat CSV (`Audiometry_data.csv`)
+with one row per patient (first implanted ear only), containing
+preoperative and postoperative audiological measurements.
+
+---
+
+## Setup
+
+```bash
+# 1. Clone repository
+git clone https://github.com/thientruc1691997/cochlear-implant-thesis.git
+
+# 2. Create virtual environment
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Configure data path
+cp config.example.py config.py
+# Edit config.py: set DATA_PATH to your Audiometry_data.csv location
+```
+
+---
+## Data Extraction
+
+Data extraction requires access to the Audiqueen SQL Server
+at Otoconsult NV.
+
+**Step 1:** Configure database connection
+cp config.example.py config.py
+# Edit config.py: set DB_SERVER, DB_NAME
+
+**Step 2:** Install ODBC driver
+# Windows: download "ODBC Driver 17 for SQL Server" from Microsoft
+
+**Step 3:** Export CSV
+pip install pyodbc
+python sql/export_to_csv.py
+# → generates data/Audiometry_data.csv
+
+**Step 4:** Run models
+python src/model1_audiometry.py --data data/Audiometry_data.csv
+
+---
+## Usage
+
+```bash
+# Run all three models
+python src/model1_audiometry.py --data data/Audiometry_data.csv
+python src/model2_easi.py       --data data/Audiometry_data.csv
+python src/model3_phoneme.py    --data data/Audiometry_data.csv
+
+# Run EDA notebook
+jupytext --to notebook notebooks/01_eda.py
+jupyter lab notebooks/01_eda.ipynb
+```
+
+---
+
+## Methods Summary
+
+- **Algorithms:** Linear Regression, SVM , XGBoost, Random Forest
+- **Missing data:** Native handling for tree-based models; median imputation per fold for LR/SVM. Conditional MNAR/MAR imputation for phoneme scores.
+- **Validation:** 5-fold cross-validation + chronological split (train ≤2019, test ≥2020)
+- **Class imbalance (Model 3):** `class_weight='balanced'` / `scale_pos_weight=10`; per-fold threshold optimisation maximising F1
+
+
+---
+
+## Citation
+
+If you use this code, please cite the thesis:
+
+> Do, N.T.T. (2025). *Data-driven Personalisation of Audiometric Targets
+> for Cochlear Implant Recipients*. Master's Thesis, UHasselt.
