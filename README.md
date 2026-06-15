@@ -1,8 +1,8 @@
 # Cochlear Implant Outcome Prediction
 
-**Master's Thesis** Nguyen Thien Truc Do (2469632)  
+**Master's Thesis:** Nguyen Thien Truc Do (2469632)  
 **University:** UHasselt  
-**Collaboration:** Dr Paul Govaerts (The Eargroup, Antwerp) 
+**Collaboration:** Dr Paul Govaerts (The Eargroup, Antwerp)\\
 **Internal supervisor:** Prof. Inigo Bermejo
 
 ---
